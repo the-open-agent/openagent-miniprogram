@@ -12,22 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export default defineAppConfig({
-  pages: [
-    "pages/chat/index",
-    "pages/chats/index",
-    "pages/login/index",
-    "pages/webview/index",
-    "pages/callback/index",
-  ],
-  window: {
-    backgroundTextStyle: "light",
-    navigationBarBackgroundColor: "#ffffff",
-    navigationBarTitleText: process.env.TARO_APP_NAME || "OpenAgent",
-    navigationBarTextStyle: "black",
-    backgroundColor: "#f5f6f8",
-  },
-  networkTimeout: {
-    request: 600000,
-  },
+export default definePageConfig({
+  navigationBarTitleText: "登录",
 });

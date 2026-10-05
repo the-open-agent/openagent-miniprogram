@@ -156,3 +156,5 @@ deploy_versions/
 # WeChat DevTools
 project.private.config.json
 private.*.key
+
+.idea

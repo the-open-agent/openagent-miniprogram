@@ -14,61 +14,39 @@
 
 import {useState} from "react";
 import Taro from "@tarojs/taro";
-import {Button, Input, View} from "@tarojs/components";
+import {Button, View} from "@tarojs/components";
 import * as AccountBackend from "../../api/AccountBackend";
 import * as Session from "../../utils/session";
 import {AppName} from "../../config";
 import "./index.scss";
 
+// Sign-in happens on Casdoor's own page (password, SMS code, WeChat, ...) in a web-view.
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
 
-  const signin = (form) => {
+  const openSigninPage = (url) => {
+    Taro.navigateTo({url: `/pages/webview/index?url=${encodeURIComponent(url)}`});
+  };
+
+  const signin = () => {
+    const url = AccountBackend.getSigninUrl();
+    if (url !== "") {
+      openSigninPage(url);
+      return;
+    }
+
+    // The sign-in URL comes from the server's web config, which arrives with get-account.
     setLoading(true);
-    Taro.login()
-      .then(({code}) => AccountBackend.signinWithWechat(code, form))
-      .then(res => {
-        if (res.status !== "ok") {
-          throw new Error(res.msg);
+    AccountBackend.getAccount()
+      .then(() => {
+        const newUrl = AccountBackend.getSigninUrl();
+        if (newUrl === "") {
+          throw new Error("服务器没有配置登录服务");
         }
-        return Session.loadAccount();
-      })
-      .then(account => {
-        if (!account) {
-          throw new Error("登录失败，请重试");
-        }
-        Taro.reLaunch({url: "/pages/chat/index"});
+        openSigninPage(newUrl);
       })
       .catch(Session.showError)
       .finally(() => setLoading(false));
-  };
-
-  const onGetPhoneNumber = (e) => {
-    if (loading) {
-      return;
-    }
-    const phoneCode = e.detail?.code;
-    if (!phoneCode) {
-      if (!(e.detail?.errMsg || "").includes("deny")) {
-        Session.showError(e.detail?.errMsg || "获取手机号失败");
-      }
-      return;
-    }
-    signin({phoneCode: phoneCode});
-  };
-
-  const onPasswordSignin = () => {
-    if (loading) {
-      return;
-    }
-    if (username.trim() === "" || password === "") {
-      Session.showError("请输入账号和密码");
-      return;
-    }
-    signin({username: username.trim(), password: password});
   };
 
   return (
@@ -77,22 +55,9 @@ export default function LoginPage() {
         <View className="brand-name">{AppName}</View>
         <View className="brand-text">你的 AI 助手</View>
       </View>
-
-      <Button className="login-button" openType="getPhoneNumber" loading={loading && !showPassword} disabled={loading} onGetPhoneNumber={onGetPhoneNumber}>
-        微信手机号登录
+      <Button className="login-button" loading={loading} disabled={loading} onClick={signin}>
+        登录
       </Button>
-
-      {showPassword ? (
-        <View className="password-form">
-          <Input className="input" placeholder="账号 / 手机号" value={username} onInput={e => setUsername(e.detail.value)} />
-          <Input className="input" placeholder="密码" password value={password} onInput={e => setPassword(e.detail.value)} onConfirm={onPasswordSignin} />
-          <Button className="password-button" loading={loading} disabled={loading} onClick={onPasswordSignin}>登录</Button>
-        </View>
-      ) : (
-        <View className="switch" onClick={() => setShowPassword(true)}>账号密码登录</View>
-      )}
-
-      <View className="tip">登录后当前微信会和账号绑定，以后点“微信手机号登录”即可直接进入</View>
     </View>
   );
 }

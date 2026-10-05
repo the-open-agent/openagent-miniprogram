@@ -18,6 +18,7 @@ import {ServerUrl} from "../config";
 // wx.request has no cookie jar, so the session cookie returned by the server
 // is kept in storage and sent back by hand.
 const CookieStorageKey = "openagentCookies";
+const WebConfigStorageKey = "openagentWebConfig";
 let cookieJar = null;
 
 function getCookieJar() {
@@ -54,7 +55,15 @@ function getHeader(header, name) {
 }
 
 export function saveCookies(res) {
-  const list = res.cookies?.length ? res.cookies : splitSetCookie(getHeader(res.header, "Set-Cookie"));
+  // jsonWebConfig holds raw JSON with commas, which the runtime may split into
+  // several "cookies", so it is read from the raw header first.
+  const setCookie = getHeader(res.header, "Set-Cookie");
+  const webConfigMatch = typeof setCookie === "string" ? setCookie.match(/jsonWebConfig=(\{.*?\}); Path=/) : null;
+  if (webConfigMatch) {
+    saveWebConfig(webConfigMatch[1]);
+  }
+
+  const list = res.cookies?.length ? res.cookies : splitSetCookie(setCookie);
   if (list.length === 0) {
     return;
   }
@@ -66,11 +75,17 @@ export function saveCookies(res) {
     }
     const pair = item.split(";")[0];
     const index = pair.indexOf("=");
-    if (index <= 0) {
+    if (index <= 0 || !/^[\w.-]+$/.test(pair.slice(0, index).trim())) {
       return;
     }
     const name = pair.slice(0, index).trim();
     const value = pair.slice(index + 1).trim();
+    if (name === "jsonWebConfig") {
+      if (!webConfigMatch) {
+        saveWebConfig(value);
+      }
+      return;
+    }
     if (value === "" || /max-age=(0|-\d+)/i.test(item) || /expires=thu, 01 jan 1970/i.test(item)) {
       delete jar[name];
     } else {
@@ -78,6 +93,30 @@ export function saveCookies(res) {
     }
   });
   Taro.setStorageSync(CookieStorageKey, jar);
+}
+
+// The server sends its web config (Casdoor issuer, clientId, app name, ...) in
+// the jsonWebConfig cookie; it is kept apart from the cookies sent back.
+function saveWebConfig(value) {
+  let config = null;
+  try {
+    config = JSON.parse(value);
+  } catch {
+    try {
+      config = JSON.parse(decodeURIComponent(value.replace(/\+/g, " ")));
+    } catch {
+      return;
+    }
+  }
+  Taro.setStorageSync(WebConfigStorageKey, config);
+}
+
+export function getWebConfig() {
+  try {
+    return Taro.getStorageSync(WebConfigStorageKey) || null;
+  } catch {
+    return null;
+  }
 }
 
 export function clearCookies() {

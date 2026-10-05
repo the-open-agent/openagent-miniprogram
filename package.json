@@ -16,8 +16,9 @@
     "lint": "eslint --ext .js,.jsx src"
   },
   "browserslist": [
-    "defaults and fully supports es6-module",
-    "maintained node versions"
+    "last 3 versions",
+    "Android >= 4.1",
+    "ios >= 8"
   ],
   "dependencies": {
     "@babel/runtime": "^7.24.4",
