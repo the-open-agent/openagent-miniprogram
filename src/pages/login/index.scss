@@ -1,0 +1,39 @@
+.login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 0 64px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 280px;
+  margin-bottom: 160px;
+}
+
+.brand-name {
+  font-size: 56px;
+  font-weight: 600;
+  color: #1f2329;
+}
+
+.brand-text {
+  margin-top: 20px;
+  font-size: 30px;
+  color: #8f959e;
+}
+
+.login-button {
+  width: 100%;
+  height: 92px;
+  line-height: 92px;
+  border-radius: 46px;
+  background-color: #07c160;
+  color: #ffffff;
+  font-size: 32px;
+}

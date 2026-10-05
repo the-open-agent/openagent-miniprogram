@@ -147,3 +147,12 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Taro
+.swc
+deploy_versions/
+.rn_temp/
+
+# WeChat DevTools
+project.private.config.json
+private.*.key

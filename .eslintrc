@@ -1,0 +1,14 @@
+{
+  "extends": ["taro/react"],
+  "globals": {
+    "defineAppConfig": "readonly",
+    "definePageConfig": "readonly"
+  },
+  "rules": {
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off",
+    "quotes": ["error", "double"],
+    "jsx-quotes": ["error", "prefer-double"],
+    "semi": ["error", "always"]
+  }
+}
