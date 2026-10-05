@@ -18,6 +18,11 @@ export default defineConfig(async(merge) => {
     outputRoot: "dist",
     plugins: [],
     defineConstants: {},
+    // Defaults, overridden by .env.local
+    env: {
+      TARO_APP_SERVER_URL: JSON.stringify("https://demo.openagentai.org"),
+      TARO_APP_NAME: JSON.stringify("OpenAgent"),
+    },
     copy: {
       patterns: [],
       options: {},

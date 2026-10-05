@@ -4,21 +4,21 @@ WeChat Mini Program (微信小程序) for [OpenAgent](https://github.com/the-ope
 
 ## Features
 
-- Sign in with WeChat (`wx.login`), via the Casdoor application that OpenAgent uses
+- Sign in with WeChat via the Casdoor application that OpenAgent uses: the phone number bound to WeChat finds the existing account, or sign in once with username and password to bind it
 - Chat with streaming answers (Markdown, reasoning, suggestions), stop generation
 - Chat history: open, delete (long press)
 
 ## How it works
 
-- **Sign-in**: `wx.login` returns a code, which is sent to OpenAgent's `POST /api/signin?code=<code>&tag=wechat_miniprogram`. OpenAgent exchanges it at Casdoor's `/api/login/oauth/access_token` with `tag=wechat_miniprogram`, and Casdoor uses the application's **WeChat Mini Program** provider to call `jscode2session`. The session cookie returned by OpenAgent is stored and sent with every request, since `wx.request` has no cookie jar.
+- **Sign-in**: `wx.login` returns a code, which is sent to OpenAgent's `POST /api/signin?code=<code>&tag=wechat_miniprogram`, with `{"phoneCode": ...}` from a `getPhoneNumber` button or `{"username": ..., "password": ...}` in the body. OpenAgent exchanges it at Casdoor's `/api/login/oauth/access_token` with `tag=wechat_miniprogram`, and Casdoor uses the application's **WeChat Mini Program** provider to call `jscode2session`. Casdoor looks up the user by the WeChat openid; an unbound user is found by the phone number (`getuserphonenumber`) or by username and password, and then bound to the openid. If no account matches the phone number and the application allows sign-up, a new user is created. The session cookie returned by OpenAgent is stored and sent with every request, since `wx.request` has no cookie jar.
 - **Streaming**: mini programs have no `EventSource`, so `/api/get-message-answer` is read with `wx.request({enableChunked: true})` and parsed as `text/event-stream` (`src/api/stream.weapp.js`). If the stream drops, the answer keeps being generated on the server, and the page polls the message until it is saved. Platforms without chunked responses use `src/api/stream.js`, which only polls.
 
 ## Setup
 
 1. Register a Mini Program at https://mp.weixin.qq.com and get its AppID and AppSecret.
 2. In Casdoor, add a provider with category **OAuth** and type **WeChat Mini Program** (Client ID = AppID, Client secret = AppSecret), and add it to the application that OpenAgent uses (`casdoorApplication` in OpenAgent's `app.conf`). Enable sign-up in that application if new users should be created on first sign-in.
-3. In the Mini Program admin console, add the OpenAgent server to **request 合法域名** (HTTPS only).
-4. Set `ServerUrl` in `src/config.js` to the OpenAgent server, and `appid` in `project.config.json` to your AppID.
+3. In the Mini Program admin console, add the OpenAgent server to **request 合法域名** (HTTPS only). If the API IP whitelist is enabled, add the Casdoor server's IP, which calls `stable_token` and `getuserphonenumber`. Declare the phone number in the user privacy guide (用户隐私保护指引). The phone number button needs a verified (微信认证) Mini Program.
+4. Copy `.env.example` to `.env.local` (ignored by git) and set your AppID, OpenAgent server and app name.
 
 ## Development
 
@@ -27,7 +27,7 @@ npm install
 npm run dev:weapp
 ```
 
-Open this directory in WeChat DevTools (微信开发者工具); it loads the build from `dist/`. For a local OpenAgent server, turn off domain checking in DevTools (详情 → 本地设置 → 不校验合法域名).
+Open the `dist/` directory in WeChat DevTools (微信开发者工具); its `project.config.json` carries the AppID from `.env.local`. For a local OpenAgent server, turn off domain checking in DevTools (详情 → 本地设置 → 不校验合法域名).
 
 Production build:
 

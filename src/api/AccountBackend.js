@@ -18,8 +18,10 @@ export function getAccount() {
   return Request.get("/api/get-account");
 }
 
-export function signinWithWechat(code) {
-  return Request.post(`/api/signin?code=${encodeURIComponent(code)}&state=&tag=wechat_miniprogram`);
+// form: {phoneCode} from a getPhoneNumber button, or {username, password} to
+// bind an existing account. Once bound, the WeChat user signs in directly.
+export function signinWithWechat(code, form = {}) {
+  return Request.post(`/api/signin?code=${encodeURIComponent(code)}&state=&tag=wechat_miniprogram`, form);
 }
 
 export function signout() {

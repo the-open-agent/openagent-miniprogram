@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// The OpenAgent server this mini program talks to. Its domain must be added to
+// Set in .env.local (see .env.example). The server's domain must be added to
 // "request 合法域名" in the WeChat MP admin console.
-export const ServerUrl = "https://demo.openagentai.org";
+export const ServerUrl = process.env.TARO_APP_SERVER_URL;
 
-export const AppName = "OpenAgent";
+export const AppName = process.env.TARO_APP_NAME;

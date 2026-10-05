@@ -21,7 +21,7 @@ export default defineAppConfig({
   window: {
     backgroundTextStyle: "light",
     navigationBarBackgroundColor: "#ffffff",
-    navigationBarTitleText: "OpenAgent",
+    navigationBarTitleText: process.env.TARO_APP_NAME || "OpenAgent",
     navigationBarTextStyle: "black",
     backgroundColor: "#f5f6f8",
   },
